@@ -1,8 +1,10 @@
 #px-bar-chart
 
+[![px-bar-chart example](example.png?raw=true)](https://garryyao.github.io/px-bar-chart)
+
 ## Overview
 
-px-bar-chart is a Predix UI component
+px-bar-chart is a Predix Experience ('Px') component for bar chart.
 
 ## Usage
 
@@ -36,13 +38,6 @@ Insert Your demo code here.
 
 <br />
 <hr />
-
-## Documentation
-
-Read the full API and view the demo [here](https://predixdev.github.io/px-bar-chart).
-
-The documentation in this repository is supplemental to the official Predix documentation, which is continuously updated and maintained by the Predix documentation team. Go to [http://predix.io](http://predix.io)  to see the official Predix documentation.
-
 
 ## Local Development
 
