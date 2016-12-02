@@ -21,7 +21,10 @@
     "HISTORY.md",
     "README.md",
     ".jshintrc",
-    ".editorconfig"
+    ".editorconfig",
+    "**/.*",
+    "./bower_components",
+    "tests"
   ],
   "dependencies": {
     "polymer": "^1.6.1",
@@ -49,5 +52,17 @@
   },
   "resolutions": {
     "px-theme": "^2.0.1"
-  }
+  },
+  "homepage": "https://github.com/garryyao/px-bar-chart",
+  "authors": [
+    "garry.yao@ge.com"
+  ],
+  "description": "Px element for bar-chart",
+  "keywords": [
+    "bar-chart",
+    "predix",
+    "polymer",
+    "ui"
+  ],
+  "license": "MIT"
 }
