@@ -2,7 +2,7 @@
   "name": "px-barchart",
   "author": "garry.yao@ge.com",
   "description": "A Px component for creating bar-chart",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "extName": null,
   "homepage": "http://predix.io/",
