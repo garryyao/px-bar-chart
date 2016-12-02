@@ -1,0 +1,249 @@
+<!--
+    Relative paths assume component is being run from inside an app or another component, where dependencies are flat
+    siblings. When this component is run from its own repo (e.g. tests, examples), we assume the server is started with
+    'gulp serve' (or similar server setup) to enable correct finding of bower dependencies for local runs.
+-->
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="css/px-bar-chart-styles.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../px-colors-design/colors.html">
+<script type="text/javascript" src="../pxd3/d3.min.js"></script>
+
+<!--
+REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
+
+##### Usage
+
+    <px-bar-chart counter-value="1"><a href="javascript:" on-click="handleClick">Click here to increment counter:</a><span>{{counterValue}}</span></px-bar-chart>
+
+@element px-bar-chart
+@blurb REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
+@homepage index.html
+@demo index.html
+-->
+
+<dom-module id="px-bar-chart">
+  <template>
+    <style include="px-bar-chart-styles"></style>
+    <div id="chart_wrapper"></div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'px-bar-chart',
+    behaviors: [
+      commonColors,
+      Polymer.IronResizableBehavior
+    ],
+    properties: {
+      /**
+       * Defines custom RBG values for each series, default to Px data-vis-colors
+       */
+      serieColors: {
+        type: Array
+      },
+
+      /**
+       * This attribute defines the series data to be charted.
+       * It needs to be passed in as a two-dimensional array for each series and for each groups in a series.
+       * Expect same number of groups in one series.
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3] ]">
+       *     </px-bar-chart>
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3], [4,5,6], [7,8,9] ]">
+       *     </px-bar-chart>
+       */
+      chartData: {
+        type: Array
+      },
+
+      /**
+       * This attribute defines the labels used for each series on x-axis, for each series if there isn't a label defined in this list,
+       * it will be fallback to "Series x"
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3], [4,5,6], [7,8,9] ]">
+       *      labels='["series1","series2",'"series3]'>
+       *     </px-bar-chart>
+       */
+      labels: {
+        type: Array
+      },
+
+      /**
+       * This attribute defines the labels used for each group on one series, which reflects labels used on legend.
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3], [4,5,6] ]">
+       *      labels='["series1","series2"]'
+       *      group-labels='["group1","group2","group3"]'>
+       *     </px-bar-chart>
+       */
+      groupLabels: {
+        type: Array
+      },
+
+      /**
+       * The width of the elem; generally the width of the charting area for most components
+       *
+       */
+      width: {
+        type: Number,
+        notify: true
+      },
+
+      /**
+       * The height of the component; generally the height of the charting area for most components.
+       */
+      height: {
+        type: Number,
+        notify: true
+      },
+
+      /**
+       * Defines the base margin for the chart. Calcs are run to add to the margin to accommodate axes and other elements which exist within the SVG frame, but outside the chart frame.
+       *
+       */
+      margin: {
+        type: Object,
+        notify: true
+      },
+    },
+    observers: ['render(chartData, labels, groupLabels, _isAttached)'],
+    listeners: {
+      'iron-resize': '_onIronResize'
+    },
+
+    attached: function() {
+      this.async(function() {
+        this._isAttached = 1;
+      });
+    },
+
+    render: function() {
+      var _this = this;
+      var rect = this.getBoundingClientRect();
+      var margin = this._getMargin(),
+        width = this.width || rect.width - margin.left - margin.right,
+        height = this.height || rect.height - margin.top - margin.bottom;
+
+      var series_colors = this.serieColors || this._getColors();
+
+      var x0 = d3.scaleBand().range([0, width]).padding(.1);
+      var x1 = d3.scaleBand();
+      var y = d3.scaleLinear().range([height, 0]);
+
+      var color = d3.scaleOrdinal()
+      .range(series_colors);
+
+      var svg = d3.select(this.$.chart_wrapper).html("").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var data = this.chartData;
+
+      if (!(data && data.length)) {
+        return;
+      }
+
+      var max_y = d3.max(data, function(vals) {
+        return d3.max(vals, function(d) { return d; });
+      });
+
+      data = data.map(function(vals, i) {
+        return {
+          name: _this.labels[i] || ['series', i].join(' '),
+          items: vals.map(function(val, i) {
+            return {
+              name: _this.groupLabels[i] || ['group', i].join(' '),
+              value: +val
+            };
+          })
+        };
+      });
+
+      var group_names = data[0].items.map(function(group) {
+        return group.name;
+      });
+
+      var series_names = data.map(function(group) { return group.name;});
+
+      x0.domain(series_names);
+      x1.domain(group_names).rangeRound([0, x0.bandwidth()]);
+      y.domain([0, max_y]);
+
+      svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x0));
+
+      svg.append("g")
+      .attr("class", "y axis")
+      .call(d3.axisLeft(y).tickFormat(d3.format(".2s")))
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Population");
+
+      var state = svg.selectAll(".state")
+      .data(data)
+      .enter().append("g")
+      .attr("class", "state")
+      .attr("transform", function(d) { return "translate(" + x0(d.name) + ",0)"; });
+
+      state.selectAll("rect")
+      .data(function(d) { return d.items; })
+      .enter().append("rect")
+      .attr("width", x1.bandwidth())
+      .attr("x", function(d) { return x1(d.name); })
+      .attr("y", function(d) { return y(d.value); })
+      .attr("height", function(d) { return height - y(d.value); })
+      .style("fill", function(d) { return color(d.name); });
+
+      var legend = svg.selectAll(".legend")
+      .data(group_names.slice().reverse())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+      legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+      legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+    },
+
+    _onIronResize: function() {
+      this.debounce('ironresize', this.render, 50);
+    },
+
+    /**
+     * Helper function to return the correct color for a particular index.
+     **/
+    _getColors: function(i) {
+      var _this = this;
+      return _this.seriesColorOrder.map(function(key) {
+        return _this.dataVisColors[key];
+      });
+    },
+
+    _getMargin: function() {
+      var margin = this.margin || {};
+      return {top: margin.top || 20, right: margin.right || 40, bottom: margin.bottom || 30, left: margin.left || 20};
+    }
+  });
+</script>
