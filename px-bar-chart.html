@@ -151,9 +151,17 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
         return;
       }
 
-      var max_y = d3.max(data, function(vals) {
-        return d3.max(vals, function(d) { return d; });
+      var max = d3.max(data, function(vals) {
+        return d3.max(vals);
       });
+
+
+      var min = d3.min(data, function(vals) {
+        return d3.min(vals);
+      });
+
+      var max_y = max < 0 ? 0 : max;
+      var min_y = min > 0 ? 0 : min;
 
       data = data.map(function(vals, i) {
         return {
@@ -175,11 +183,32 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
       x0.domain(series_names);
       x1.domain(group_names).rangeRound([0, x0.bandwidth()]);
-      y.domain([0, max_y]);
+      y.domain([min_y, max_y]);
+      var zero_y = y(0);
+
+      var state = svg.selectAll(".state")
+      .data(data)
+      .enter().append("g")
+      .attr("class", "state")
+      .attr("transform", function(d) { return "translate(" + x0(d.name) + ",0)"; });
+
+      // bar
+      state.selectAll("rect")
+      .data(function(d) { return d.items; })
+      .enter().append("rect")
+      .attr("width", x1.bandwidth())
+      .attr("x", function(d) { return x1(d.name); })
+      .attr("y", function(d) {
+        return d.value < 0 ? zero_y : y(d.value);
+      })
+      .attr("height", function(d) {
+        return d.value < 0 ? y(d.value) - zero_y : zero_y - y(d.value);
+      })
+      .style("fill", function(d) { return color(d.name); });
 
       svg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + zero_y + ")")
       .call(d3.axisBottom(x0));
 
       svg.append("g")
@@ -191,21 +220,6 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Population");
-
-      var state = svg.selectAll(".state")
-      .data(data)
-      .enter().append("g")
-      .attr("class", "state")
-      .attr("transform", function(d) { return "translate(" + x0(d.name) + ",0)"; });
-
-      state.selectAll("rect")
-      .data(function(d) { return d.items; })
-      .enter().append("rect")
-      .attr("width", x1.bandwidth())
-      .attr("x", function(d) { return x1(d.name); })
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); })
-      .style("fill", function(d) { return color(d.name); });
 
       var legend = svg.selectAll(".legend")
       .data(group_names.slice().reverse())
@@ -243,7 +257,7 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
     _getMargin: function() {
       var margin = this.margin || {};
-      return {top: margin.top || 20, right: margin.right || 40, bottom: margin.bottom || 30, left: margin.left || 20};
+      return {top: margin.top || 20, right: margin.right || 40, bottom: margin.bottom || 30, left: margin.left || 40};
     }
   });
 </script>

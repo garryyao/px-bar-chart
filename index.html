@@ -164,29 +164,46 @@
   </template>
   <script>
     window.addEventListener('WebComponentsReady', function() {
+      function gen_array_n_levels(levels, value) {
+        if (typeof levels === 'number') {
+          levels = [levels];
+        }
+        var n = levels.shift();
+        var arr = [];
+        for (var i = 0; i < n; i++) {
+          arr.push(levels.length ? gen_array_n_levels(levels.slice(0), value) : seed(i));
+        }
+        return arr;
 
-      var template = document.querySelector('template[is=dom-bind]'),
-          optionsArray = [
-            {
-              "counterValue" : "0",
-              "lightDomContent": '<a href="javascript:" on-click="handleClick">Click here to increment counter:</a><span>{{counterValue}}</span>'
-            }
-          ],
-          indexPlusOne = function(num) {
-            return num + 1;
-          };
+        function seed(i) {
+          if (Array.isArray(value) && value.length === 2)
+            return value[0] + Math.random() * (value[1] - value[0]);
+          else if (typeof value === 'string') {
+            return value.replace(/%n/g, i+1);
+          }
 
-          template.selected = "0";
-          template.optionsArray = optionsArray;
-          template.indexPlusOne = indexPlusOne;
-          template.margin = {top: 20, left: 20, right: 20, top:20};
-          template.series = [
-            [2704659, 4499890, 2159981, 3853788, 10604510, 8819342, 4114496],
-            [2027307, 3277946, 1420518, 2454721, 7017731, 5656528, 2472223],
-          ];
-          template.xAxisLabels = ['CA', 'TX'];
-          template.groupLabels = ['Under 5 Years', '5 to 13 Years', '5 to 13 Years', '14 to 17 Years', '18 to 24 Years', '25 to 44 Years', '45 to 64 Years', '65 Years and Over'];
+        }
+      }
 
+      var template = document.querySelector('template[is=dom-bind]');
+
+      var optionsArray = [
+        {
+          "counterValue": "0",
+          "lightDomContent": '<a href="javascript:" on-click="handleClick">Click here to increment counter:</a><span>{{counterValue}}</span>'
+        }
+      ],
+        indexPlusOne = function(num) {
+          return num + 1;
+        };
+      template.selected = "0";
+      template.optionsArray = optionsArray;
+      template.indexPlusOne = indexPlusOne;
+
+      template.margin = {top: 20, left: 35, right: 20, top: 20};
+      template.series = gen_array_n_levels([5,3], [-1000, 1000]);
+      template.xAxisLabels = gen_array_n_levels(5, 'Machine %n');
+      template.groupLabels = gen_array_n_levels(3, 'Sensor %n');
     });
   </script>
 </body>
