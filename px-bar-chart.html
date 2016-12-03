@@ -61,6 +61,43 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
       },
 
       /**
+       * This setting defines the spacing ratio between two bar series, shall be in the range [0, 1].
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3] ]" series-padding=".1">
+       *     </px-bar-chart>
+       */
+      seriesPadding: {
+        type: Number,
+        value: .3
+      },
+
+      /**
+       * This setting defines the spacing ratio between two bars in one series, shall be in the range [0, 1].
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3] ]" bar-padding=".2">
+       *     </px-bar-chart>
+       */
+      barPadding: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * This setting defines the outer spacing ratio, aka. the space from start to the first bar, and from the last bar to the chart end,
+       * shall be in the range [0, 1].
+       *
+       *     <px-bar-chart
+       *      chart-data="[ [1,2,3] ]" outer-padding=".2">
+       *     </px-bar-chart>
+       */
+      outerPadding: {
+        type: Number,
+        value: .2
+      },
+
+      /**
        * This attribute defines the labels used for each series on x-axis, for each series if there isn't a label defined in this list,
        * it will be fallback to "Series x"
        *
@@ -132,8 +169,8 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
       var series_colors = this.serieColors || this._getColors();
 
-      var x0 = d3.scaleBand().range([0, width]).padding(.1);
-      var x1 = d3.scaleBand();
+      var x0 = d3.scaleBand().range([0, width]).paddingInner(this.seriesPadding).paddingOuter(this.outerPadding);
+      var x1 = d3.scaleBand().paddingInner(this.barPadding);
       var y = d3.scaleLinear().range([height, 0]);
 
       var color = d3.scaleOrdinal()
