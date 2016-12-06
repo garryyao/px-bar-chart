@@ -24,11 +24,11 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 <dom-module id="px-bar-chart">
   <template>
     <style include="px-bar-chart-styles"></style>
-    <div id="chart_wrapper" class="chart-wrapper flex flex--row">
+    <div id="chart_wrapper" class="chart-wrapper flex">
       <div id="chart_body" class="chart-body">
         <svg></svg>
       </div>
-      <ul class="chart-legend list-bare"></ul>
+      <ul class="chart-legend list-bare flex"></ul>
     </div>
   </template>
 </dom-module>
@@ -152,6 +152,14 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
         type: Object,
         notify: true
       },
+
+      /**
+       * Defines the legend layout, supported values are "e" or "t"
+       */
+      legendLayout: {
+        type: String,
+        value: 'n'
+      },
     },
     observers: ['render(chartData, labels, groupLabels, _isAttached)'],
     listeners: {
@@ -183,6 +191,10 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
       var $root = this.$.chart_wrapper;
       var root = d3.select($root);
+      root
+      .classed("flex--col--rev", this.legendLayout === 'n')
+      .classed("flex--row", this.legendLayout === 'e');
+
       var svg = root.select("svg").html('')
       .attr("width", width)
       .attr("height", height)
@@ -266,6 +278,8 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
       .text("Population");
 
       var legendGroup = root.select('.chart-legend').html('');
+      legendGroup.classed('flex--row', this.legendLayout === 'n');
+      legendGroup.classed('flex--col', this.legendLayout === 'e');
       var legend = legendGroup.selectAll(".legend-item")
       .data(group_names)
       .enter()

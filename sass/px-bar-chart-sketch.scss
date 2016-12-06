@@ -62,6 +62,10 @@ Predix branding rules go in px-bar-chart-predix.scss, not in this file.
   min-width: 120px;
   text-align: left;
   padding: 10px;
+  & > li {
+    margin-left: .5rem;
+    margin-top: .5rem;
+  }
 }
 
 $legend-mark-size: 12px;
