@@ -51,7 +51,8 @@
     "px-starter-kit-design": "~0.6.0"
   },
   "resolutions": {
-    "px-theme": "^2.0.1"
+    "px-theme": "^2.0.1",
+    "px-dropdown": "~2.0.0"
   },
   "homepage": "https://github.com/garryyao/px-bar-chart",
   "authors": [

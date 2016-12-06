@@ -29,6 +29,9 @@ Predix branding rules go in px-bar-chart-predix.scss, not in this file.
 @import "px-normalize-design/_generic.normalize.scss";
 @import "px-box-sizing-design/_generic.box-sizing.scss";
 @import "px-helpers-design/_generic.helpers.scss";
+@import "px-list-bare-design/_objects.list-bare.scss";
+@import 'px-list-inline-design/_objects.list-inline.scss';
+@import 'px-mixins-design/_tools.mixins.scss';
 
 // Base
 @import "px-flexbox-design/_base.flexbox.scss";
@@ -55,3 +58,33 @@ Predix branding rules go in px-bar-chart-predix.scss, not in this file.
   display: block;
 }
 
+.chart-legend {
+  min-width: 120px;
+  text-align: left;
+  padding: 10px;
+}
+
+$legend-mark-size: 12px;
+
+.legend-label-mark {
+  display: block;
+  height: $legend-mark-size;
+  width: $legend-mark-size;
+
+  &+.legend-label {
+    margin-left: .5rem;
+  }
+}
+
+.chart-wrapper {
+  height: 100%;
+}
+
+.chart-body {
+  flex-grow: 1;
+}
+
+.legend-label {
+  display: block;
+  @include inuit-font-size($legend-mark-size);
+}

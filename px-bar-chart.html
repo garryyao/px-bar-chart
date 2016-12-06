@@ -21,11 +21,15 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 @homepage index.html
 @demo index.html
 -->
-
 <dom-module id="px-bar-chart">
   <template>
     <style include="px-bar-chart-styles"></style>
-    <div id="chart_wrapper"></div>
+    <div id="chart_wrapper" class="chart-wrapper flex flex--row">
+      <div id="chart_body" class="chart-body">
+        <svg></svg>
+      </div>
+      <ul class="chart-legend list-bare"></ul>
+    </div>
   </template>
 </dom-module>
 <script>
@@ -162,7 +166,8 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
     render: function() {
       var _this = this;
-      var rect = this.getBoundingClientRect();
+      var $chartBody = this.$.chart_body;
+      var rect = $chartBody.getBoundingClientRect();
       var margin = this._getMargin(),
         width = this.width || rect.width - margin.left - margin.right,
         height = this.height || rect.height - margin.top - margin.bottom;
@@ -176,9 +181,11 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
       var color = d3.scaleOrdinal()
       .range(series_colors);
 
-      var svg = d3.select(this.$.chart_wrapper).html("").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      var $root = this.$.chart_wrapper;
+      var root = d3.select($root);
+      var svg = root.select("svg").html('')
+      .attr("width", width)
+      .attr("height", height)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -258,24 +265,17 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
       .style("text-anchor", "end")
       .text("Population");
 
-      var legend = svg.selectAll(".legend")
-      .data(group_names.slice().reverse())
-      .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      var legendGroup = root.select('.chart-legend').html('');
+      var legend = legendGroup.selectAll(".legend-item")
+      .data(group_names)
+      .enter()
+      .append("li")
+      .classed('flex flex--row flex--middle flex--nowrap', true);
 
-      legend.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", color);
+      var marker = legend.append("span").classed("legend-label-mark", true).style('background-color', color);
+      var label = legend.append("span").attr('class', 'legend-label').text(function(d) { return d; });
 
-      legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
+      this.scopeSubtree($root, true);
     },
 
     _onIronResize: function() {
@@ -294,7 +294,7 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
     _getMargin: function() {
       var margin = this.margin || {};
-      return {top: margin.top || 20, right: margin.right || 40, bottom: margin.bottom || 30, left: margin.left || 40};
+      return {top: margin.top || 10, right: margin.right || 0, bottom: margin.bottom || 10, left: margin.left || 40};
     }
   });
 </script>
